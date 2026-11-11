@@ -1,0 +1,16 @@
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+main > section {
+  padding: 16px;
+  border: 1px solid #526184;
+  border-radius: 8px;
+  background-color: #1c2940;
+  color: #f2f5ff;
+}
+.selected {
+  background-color: #405781;
+}
