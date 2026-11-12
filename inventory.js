@@ -74,10 +74,51 @@ class Inventory {
 
     this.selected = next;
   }
+
+  useSelected() {
+    if(this.selected === null)  return;
+
+    //Potion
+    else if(this.selected.item.type === 'consumable'){
+        if(player.health === player.maxHealth){
+          console.log('Character is currently at full HP');
+          return;
+        }
+        else if(player.health < player.maxHealth){
+            player.health = player.health + this.selected.item.healAmount;
+            if(player.health > player.maxHealth){
+              player.health = player.maxHealth;
+            }
+            if(this.selected.item.quantity > 0){
+            this.selected.item.quantity--;
+            if(this.selected.item.quantity === 0){
+              this.removeSelected();
+            }
+        }
+        }
+    }
+    
+  }
+  equipSelected(){
+    if(this.selected === null) return;
+
+    else if(this.selected.item.type === 'equipment'){
+      if(this.selected.item.slot === 'rightHand' && player.rightHand === null){
+        player.rightHand = this.selected.item;
+        this.removeSelected();
+      }
+      else if(this.selected.item.slot === 'leftHand' && player.leftHand === null){
+        player.leftHand = this.selected.item;
+        this.removeSelected();
+      }
+    }
+  }
 }
 const player = {
   health: 60,
   maxHealth: 100,
+  rightHand: null,
+  leftHand: null,
 };
 
 function renderInventory() {
@@ -100,6 +141,15 @@ function renderInventory() {
 function renderPlayer() {
   const health = document.getElementById("player-health");
   health.textContent = `HP ${player.health} / ${player.maxHealth}`;
+
+  const rHand = document.getElementById("right-hand");
+  if(player.rightHand === null){
+    rHand.textContent = `R. Hand: Empty`;
+  }
+  else{
+    rHand.textContent = `R. Hand: ${player.rightHand.name}`;
+  }
+  
 }
 
 const inventory = new Inventory();
@@ -108,12 +158,14 @@ inventory.append({
   quantity: 1,
   description: "Steel blade for fighting zombies up close.",
   type: "equipment",
+  slot: "rightHand",
 });
 inventory.append({
   name: "Shield",
   quantity: 1,
   description: "Sturdy wooden shield that helps block zombie attacks.",
   type: "equipment",
+  slot: 'leftHand',
 });
 inventory.append({
   name: "Health Potion",
@@ -138,5 +190,14 @@ document.addEventListener("keydown", function (event) {
   } else if (event.key === "Delete") {
     inventory.removeSelected();
     renderInventory();
+  } else if(event.key === "e"){
+    inventory.useSelected();
+    renderInventory();
+    renderPlayer();
+  } else if(event.key === "f"){
+    inventory.equipSelected();
+    renderInventory();
+    renderPlayer();
   }
+
 });
