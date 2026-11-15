@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Sword",
+    "quantity": 1,
+    "description": "Steel blade for fighting zombies up close.",
+    "type": "equipment",
+    "slot": "rightHand",
+    "id": "sword"
+  },
+  {
+    "name": "Shield",
+    "quantity": 1,
+    "description": "Sturdy wooden shield that helps block zombie attacks.",
+    "type": "equipment",
+    "slot": "leftHand",
+    "id": "shield"
+  },
+  {
+    "name": "Health Potion",
+    "quantity": 3,
+    "description": "Restores 15 HP when consumed",
+    "type": "consumable",
+    "healAmount": 15,
+    "id": "health-potion"
+  },
+  {
+    "name": "Helmet",
+    "quantity": 1,
+    "description": "A steel helmet that protects your head from zombie attacks.",
+    "type": "equipment",
+    "slot": "head",
+    "id": "helmet"
+  },
+  {
+    "name": "Armor",
+    "quantity": 1,
+    "description": "A steel armor that protects your body from zombie attacks.",
+    "type": "equipment",
+    "slot": "body",
+    "id": "armor"
+  }
+]

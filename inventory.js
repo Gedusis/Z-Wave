@@ -1,4 +1,3 @@
-console.log("Inventory script loaded");
 class InventoryNode {
   constructor(item) {
     this.item = item;
@@ -6,9 +5,29 @@ class InventoryNode {
     this.prev = null;
   }
 }
-const firstNode = new InventoryNode({ name: "Health Potion", quantity: 2 });
-console.log(firstNode);
+class ItemLibraryNode {
+  constructor(item) {
+    this.item = item;
+    this.next = null;
+  }
+}
+class ItemLibrary {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+  }
+  append(item) {
+    const node = new ItemLibraryNode(item);
 
+    if (this.head === null) {
+      this.head = node;
+      this.tail = node;
+      return;
+    }
+    this.tail.next = node;
+    this.tail = node;
+  }
+}
 class Inventory {
   constructor() {
     this.head = null;
@@ -31,15 +50,6 @@ class Inventory {
 
     tail.next = node;
     this.head.prev = node;
-  }
-  printItems() {
-    if (this.head === null) return;
-
-    let current = this.head;
-    do {
-      console.log(current.item);
-      current = current.next;
-    } while (current !== this.head);
   }
   selectNext() {
     if (this.selected === null) return;
@@ -76,42 +86,115 @@ class Inventory {
   }
 
   useSelected() {
-    if(this.selected === null)  return;
-
+    if (this.selected === null) return;
     //Potion
-    else if(this.selected.item.type === 'consumable'){
-        if(player.health === player.maxHealth){
-          console.log('Character is currently at full HP');
-          return;
+    else if (this.selected.item.type === "consumable") {
+      if (player.health === player.maxHealth) {
+        console.log("Character is currently at full HP");
+        return;
+      } else if (player.health < player.maxHealth) {
+        player.health = player.health + this.selected.item.healAmount;
+        if (player.health > player.maxHealth) {
+          player.health = player.maxHealth;
         }
-        else if(player.health < player.maxHealth){
-            player.health = player.health + this.selected.item.healAmount;
-            if(player.health > player.maxHealth){
-              player.health = player.maxHealth;
-            }
-            if(this.selected.item.quantity > 0){
-            this.selected.item.quantity--;
-            if(this.selected.item.quantity === 0){
-              this.removeSelected();
-            }
+        if (this.selected.item.quantity > 0) {
+          this.selected.item.quantity--;
+          if (this.selected.item.quantity === 0) {
+            this.removeSelected();
+          }
         }
-        }
+      }
     }
-    
   }
-  equipSelected(){
-    if(this.selected === null) return;
-
-    else if(this.selected.item.type === 'equipment'){
-      if(this.selected.item.slot === 'rightHand' && player.rightHand === null){
+  equipSelected() {
+    if (this.selected === null) return;
+    else if (this.selected.item.type === "equipment") {
+      if (
+        this.selected.item.slot === "rightHand" &&
+        player.rightHand === null
+      ) {
         player.rightHand = this.selected.item;
         this.removeSelected();
-      }
-      else if(this.selected.item.slot === 'leftHand' && player.leftHand === null){
+      } else if (
+        this.selected.item.slot === "leftHand" &&
+        player.leftHand === null
+      ) {
         player.leftHand = this.selected.item;
+        this.removeSelected();
+      } else if (this.selected.item.slot === "head" && player.head === null) {
+        player.head = this.selected.item;
+        this.removeSelected();
+      } else if (this.selected.item.slot === "body" && player.body === null) {
+        player.body = this.selected.item;
         this.removeSelected();
       }
     }
+  }
+  unequipRightHand() {
+    if (player.rightHand === null) return;
+
+    this.append(player.rightHand);
+    player.rightHand = null;
+  }
+  unequipLeftHand() {
+    if (player.leftHand === null) return;
+
+    this.append(player.leftHand);
+    player.leftHand = null;
+  }
+  unequipHead() {
+    if (player.head === null) return;
+
+    this.append(player.head);
+    player.head = null;
+  }
+  unequipBody() {
+    if (player.body === null) return;
+
+    this.append(player.body);
+    player.body = null;
+  }
+  sortByName() {
+    if (this.selected === null || this.selected.next === this.selected) return;
+
+    let swapped;
+
+    do {
+      swapped = false;
+      let first = this.head;
+
+      while (first.next !== this.head) {
+        const second = first.next;
+        if (first.item.name.localeCompare(second.item.name) > 0) {
+          const temp = first.item;
+          first.item = second.item;
+          second.item = temp;
+          swapped = true;
+        }
+        first = second;
+      }
+    } while (swapped);
+  }
+  sortByType() {
+    if (this.selected === null || this.selected.next === this.selected) return;
+
+    let swapped;
+
+    do {
+      swapped = false;
+      let first = this.head;
+
+      while (first.next !== this.head) {
+        const second = first.next;
+        if (first.item.type.localeCompare(second.item.type) > 0) {
+          const temp = first.item;
+          first.item = second.item;
+          second.item = temp;
+          swapped = true;
+        }
+        first = second;
+      }
+    } while (swapped);
   }
 }
 const player = {
@@ -119,8 +202,36 @@ const player = {
   maxHealth: 100,
   rightHand: null,
   leftHand: null,
+  head: null,
+  body: null,
 };
+async function loadItemLibrary() {
+  const response = await fetch("item-library.json");
+  const items = await response.json();
 
+  for (const item of items) {
+    itemLibrary.append({ ...item });
+  }
+  renderItemLibrary();
+}
+
+async function loadInventory() {
+  const response = await fetch("inventory.json");
+  const items = await response.json();
+
+  for (const item of items) {
+    inventory.append({ ...item });
+  }
+  renderInventory();
+}
+
+async function loadPlayer() {
+  const response = await fetch("player.json");
+  const data = await response.json();
+
+  Object.assign(player, data);
+  renderPlayer();
+}
 function renderInventory() {
   const list = document.getElementById("inventory-list");
   list.textContent = "";
@@ -138,48 +249,75 @@ function renderInventory() {
     current = current.next;
   } while (current !== inventory.head);
 }
+function renderItemLibrary() {
+  const library = document.getElementById("item-library-list");
+  library.textContent = "";
+
+  let current = itemLibrary.head;
+
+  while (current !== null) {
+    const item = current.item;
+    const li = document.createElement("li");
+    const button = document.createElement("button");
+    li.textContent = `${current.item.name}`;
+    button.textContent = `Add`;
+    button.addEventListener("click", function () {
+      inventory.append({ ...item });
+      renderInventory();
+    });
+
+    li.appendChild(button);
+    library.appendChild(li);
+
+    current = current.next;
+  }
+}
 function renderPlayer() {
   const health = document.getElementById("player-health");
   health.textContent = `HP ${player.health} / ${player.maxHealth}`;
 
   const rHand = document.getElementById("right-hand");
-  if(player.rightHand === null){
+  if (player.rightHand === null) {
     rHand.textContent = `R. Hand: Empty`;
-  }
-  else{
+  } else {
     rHand.textContent = `R. Hand: ${player.rightHand.name}`;
   }
-  
+  const lHand = document.getElementById("left-hand");
+  if (player.leftHand === null) {
+    lHand.textContent = `L. Hand: Empty`;
+  } else {
+    lHand.textContent = `L. Hand: ${player.leftHand.name}`;
+  }
+  const head = document.getElementById("head");
+  if (player.head === null) {
+    head.textContent = `Head: Empty`;
+  } else {
+    head.textContent = `Head: ${player.head.name}`;
+  }
+  const body = document.getElementById("body");
+  if (player.body === null) {
+    body.textContent = `Body: Empty`;
+  } else {
+    body.textContent = `Body: ${player.body.name}`;
+  }
 }
 
 const inventory = new Inventory();
-inventory.append({
-  name: "Sword",
-  quantity: 1,
-  description: "Steel blade for fighting zombies up close.",
-  type: "equipment",
-  slot: "rightHand",
-});
-inventory.append({
-  name: "Shield",
-  quantity: 1,
-  description: "Sturdy wooden shield that helps block zombie attacks.",
-  type: "equipment",
-  slot: 'leftHand',
-});
-inventory.append({
-  name: "Health Potion",
-  quantity: 3,
-  description: "Restores 15 HP when consumed",
-  type: "consumable",
-  healAmount: 15,
-});
+const itemLibrary = new ItemLibrary();
 
-renderInventory();
-renderPlayer();
+loadPlayer();
+loadItemLibrary();
+loadInventory();
 
 document.addEventListener("keydown", function (event) {
-  if (event.key === "ArrowDown") {
+  const inventorySection = document.getElementById("inventory");
+  if (event.key.toLowerCase() === "i") {
+    inventorySection.hidden = !inventorySection.hidden;
+    return;
+  }
+  if (inventorySection.hidden === true) {
+    return;
+  } else if (event.key === "ArrowDown") {
     inventory.selectNext();
     event.preventDefault();
     renderInventory();
@@ -190,14 +328,35 @@ document.addEventListener("keydown", function (event) {
   } else if (event.key === "Delete") {
     inventory.removeSelected();
     renderInventory();
-  } else if(event.key === "e"){
+  } else if (event.key === "e") {
     inventory.useSelected();
     renderInventory();
     renderPlayer();
-  } else if(event.key === "f"){
+  } else if (event.key === "f") {
     inventory.equipSelected();
     renderInventory();
     renderPlayer();
+  } else if (event.key.toLowerCase() === "r") {
+    inventory.unequipRightHand();
+    renderInventory();
+    renderPlayer();
+  } else if (event.key.toLowerCase() === "l") {
+    inventory.unequipLeftHand();
+    renderInventory();
+    renderPlayer();
+  } else if (event.key.toLowerCase() === "h") {
+    inventory.unequipHead();
+    renderInventory();
+    renderPlayer();
+  } else if (event.key.toLowerCase() === "b") {
+    inventory.unequipBody();
+    renderInventory();
+    renderPlayer();
+  } else if (event.key.toLowerCase() === "n") {
+    inventory.sortByName();
+    renderInventory();
+  } else if (event.key.toLowerCase() === "t") {
+    inventory.sortByType();
+    renderInventory();
   }
-
 });
