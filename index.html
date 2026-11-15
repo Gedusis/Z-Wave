@@ -12,6 +12,7 @@
     <section id="inventory">
       <h2>Inventory</h2>
       <ul id="inventory-list"></ul>
+      <p id="inventory-description" hidden></p>
     </section>
     <section id="Controls">
       <h2>Controls</h2>
@@ -24,8 +25,6 @@
         <li>N / T — Sort by name / type</li>
         <li>R / L / H / B — Unequip right hand / left hand / head / body</li>
       </ul>
-
-      <button type="button" id="exit-game">Exit Game</button>
     </section>
     <section id="itemLibrary">
       <h2>Item Library</h2>
@@ -34,13 +33,21 @@
     <section id="character">
       <h2>Character</h2>
       <p id="player-health"></p>
-      <ul>
+      <ul class="equipment-grid">
+        <li id="character-portrait">
+          <div class="survivor" role="img" aria-label="Survivor silhouette">
+            <span class="survivor-head"></span>
+            <span class="survivor-torso"></span>
+            <span class="survivor-legs"></span>
+          </div>
+        </li>
         <li id="right-hand">R. Hand: Empty</li>
         <li id="left-hand">L. Hand: Empty</li>
         <li id="head">Head: Empty</li>
         <li id="body">Body: Empty</li>
       </ul>
     </section>
+    <button type="button" id="exit-game">Exit Game</button>
   </main>
   <p id="game-ended" hidden>Game ended</p>
   <body></body>

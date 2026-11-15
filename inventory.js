@@ -234,6 +234,8 @@ async function loadPlayer() {
 }
 function renderInventory() {
   const list = document.getElementById("inventory-list");
+  const description = document.getElementById("inventory-description");
+  description.hidden = true;
   list.textContent = "";
   if (inventory.head === null) return;
 
@@ -241,13 +243,33 @@ function renderInventory() {
   do {
     const li = document.createElement("li");
     li.textContent = `${current.item.name} x ${current.item.quantity}`;
-    li.title = current.item.description;
+    const itemDescription = current.item.description;
+    if (itemDescription) {
+      li.addEventListener("mouseenter", () => {
+        description.textContent = itemDescription;
+        description.hidden = false;
+      });
+      li.addEventListener("mouseleave", () => {
+        description.hidden = true;
+      });
+    }
     list.appendChild(li);
     if (current === inventory.selected) {
       li.classList.add("selected");
     }
     current = current.next;
   } while (current !== inventory.head);
+
+  const selected = list.querySelector(".selected");
+  if (!selected || list.clientHeight === 0) return;
+
+  const top = selected.offsetTop;
+  const bottom = top + selected.offsetHeight;
+  if (top < list.scrollTop) {
+    list.scrollTop = top;
+  } else if (bottom > list.scrollTop + list.clientHeight) {
+    list.scrollTop = bottom - list.clientHeight;
+  }
 }
 function renderItemLibrary() {
   const library = document.getElementById("item-library-list");
@@ -276,30 +298,19 @@ function renderPlayer() {
   const health = document.getElementById("player-health");
   health.textContent = `HP ${player.health} / ${player.maxHealth}`;
 
-  const rHand = document.getElementById("right-hand");
-  if (player.rightHand === null) {
-    rHand.textContent = `R. Hand: Empty`;
-  } else {
-    rHand.textContent = `R. Hand: ${player.rightHand.name}`;
-  }
-  const lHand = document.getElementById("left-hand");
-  if (player.leftHand === null) {
-    lHand.textContent = `L. Hand: Empty`;
-  } else {
-    lHand.textContent = `L. Hand: ${player.leftHand.name}`;
-  }
-  const head = document.getElementById("head");
-  if (player.head === null) {
-    head.textContent = `Head: Empty`;
-  } else {
-    head.textContent = `Head: ${player.head.name}`;
-  }
-  const body = document.getElementById("body");
-  if (player.body === null) {
-    body.textContent = `Body: Empty`;
-  } else {
-    body.textContent = `Body: ${player.body.name}`;
-  }
+  renderEquipmentSlot("right-hand", "R. Hand", player.rightHand);
+  renderEquipmentSlot("left-hand", "L. Hand", player.leftHand);
+  renderEquipmentSlot("head", "Head", player.head);
+  renderEquipmentSlot("body", "Body", player.body);
+}
+
+function renderEquipmentSlot(id, label, item) {
+  const slot = document.getElementById(id);
+  slot.textContent = label + ":";
+
+  const value = document.createElement(item ? "strong" : "span");
+  value.textContent = item ? item.name : "Empty";
+  slot.appendChild(value);
 }
 
 const inventory = new Inventory();
