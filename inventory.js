@@ -309,7 +309,16 @@ loadPlayer();
 loadItemLibrary();
 loadInventory();
 
+const gamePanel = document.querySelector("main");
+const exitButton = document.getElementById("exit-game");
+const gameEnded = document.getElementById("game-ended");
+exitButton.addEventListener("click", function () {
+  gamePanel.hidden = true;
+  gameEnded.hidden = false;
+});
+
 document.addEventListener("keydown", function (event) {
+  if (gamePanel.hidden === true) return;
   const inventorySection = document.getElementById("inventory");
   if (event.key.toLowerCase() === "i") {
     inventorySection.hidden = !inventorySection.hidden;

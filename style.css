@@ -3,7 +3,9 @@ main {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-
+main[hidden] {
+  display: none;
+}
 main > section {
   padding: 16px;
   border: 1px solid #526184;
